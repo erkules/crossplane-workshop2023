@@ -1,0 +1,30 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xselect.acme.example.org
+spec:
+  connectionSecretKeys:
+    - kubeconfig
+  group: acme.example.org
+  names:
+    # 
+    kind:     xselect
+    plural:   xselect 
+  claimNames:           # Claims are namespaced Objects
+    kind:     select
+    plural: select
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          descrition: A simple Kafka Cluster
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                lala:
+                  type: string
+                  description: nobody cares
