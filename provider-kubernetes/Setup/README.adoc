@@ -1,0 +1,24 @@
+
+* We are installing the Provider for Kubernetes.
+* We also create a ServiceAccount for this Provider.
+* And tell the Provider to use this ServiceAccount.
+
+~~~
+kubectl apply -f Provider.yaml
+kubectl -n crossplane-system  get pods
+~~~
+
+Just wait till the installation is healthy
+
+~~~
+kubectl get providers
+~~~
+
+
+
+In theory we could run multiple Configs for a Provider.
+We just want to address the local cluster.
+
+~~~
+kubectl apply -f ProviderConfig.yaml
+~~~

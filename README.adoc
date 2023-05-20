@@ -167,7 +167,13 @@ image::mindblow.gif[]
 ----
 
 * Provider
-* ProviderConfig
+
+# Provider
+
+Before you get started you need an Provider for "Cloud" Ressources you want to access.
+
+Providers are bundled as OCI-Images. There is also a list of Providers https://marketplace.upbound.io/
+
 
 ## Composition
 
@@ -238,7 +244,7 @@ spec:
 
 Attention: The Composition and the XRD "describe" the same Resource
 
-Erkan: Explain the "Offering Concept" (of Compositions) in Crossplane.
+Erkan/Robert: Explain the "Offering Concept" (of Compositions) in Crossplane.
 
 
 
@@ -404,12 +410,7 @@ kubectl get crd -o custom-columns=NAME:.metadata.name,CATEGORIES:.spec.names.cat
 
 # Installation
 
-Again create/install a Provider
-
-----
-kubectl apply -f provider-kubernetes/provider.yaml    --wait   
-kubectl -n crossplane-system  get pods
-----
+include::provider-kubernetes/Setup/README.adoc
 
 * Provide cluster-admin privileges to the ServiceAccount 
 * (We could also provide a kubeconfig (remote accessing a K8s))
