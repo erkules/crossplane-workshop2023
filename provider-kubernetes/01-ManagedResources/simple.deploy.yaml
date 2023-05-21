@@ -25,3 +25,4 @@ spec:
               image: erkules/nginxhostname:v1
   providerConfigRef:
     name: kubernetes-provider
+  deletionPolicy: Orphan
