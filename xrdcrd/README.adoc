@@ -1,0 +1,43 @@
+== Let's recap K8s basics
+
+run in a Shell:
+
+----
+watch kubectl api-resources --api-group=linsenraum.de
+----
+
+Apply the in another shell
+
+----
+kubectl apply -f crd.yaml
+----
+
+Apply the XRD
+
+----
+kubectl apply -f xrd.yaml
+----
+
+== Apply Objects
+
+----
+kubectl apply -f erkan.yaml
+kubectl apply -f coco.yaml
+----
+
+----
+kubect  get erkan
+kubect  get coco
+----
+
+Und ja bei beiden Objekten handelt es sich um "leere" Einträge im etcd
+
+== CleaningWoman
+
+----
+kubectl delete -f erkan.yaml
+kubectl delete -f coco.yaml
+kubectl delete -f crd.yaml
+kubectl delete -f xrd.yaml
+----
+

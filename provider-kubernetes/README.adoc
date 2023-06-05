@@ -1,0 +1,32 @@
+
+== Kubernetes Provider
+
+* Manage Kubernetes Ressources using Crossplane
+* It doesn't need to be Cloud
+* [Repo](https://github.com/crossplane-contrib/provider-kubernetes)
+
+== Idea
+
+* Using Provider CRDs
+* Create multi-bundle Compositions
+* Create XRD
+
+== Specials
+
+* The Kubernetes Providers has some special features
+* We will ignore this for the sake to focus on Crossplane core features.
+
+== So we miss
+
+* Install order
+* Uninstall order
+* Resource Management Policy
+* Handling unmanaged resources
+
+== But why a Kubernetes Provider?
+
+* Maybe you like the (missing) features
+* A way to integrate "vanilla" Kubernetes
+* -> Multi-provider Deployments
+* something else?
+

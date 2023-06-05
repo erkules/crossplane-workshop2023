@@ -24,8 +24,18 @@ spec:
             properties:
               hiob:
                 type: string
-              botschaft:
+              games:
                 type: integer
+    additionalPrinterColumns:
+    - name: games
+      type: integer
+      jsonPath: .spec.games
+  # bei mehreren versions kann eine conversion angegeben
+  conversion:
+    strategy: None
+    #strategy: Webhook
+    #webhookClientConfig
+  # either Namespaced or Cluster
   scope: Namespaced
   names:
     plural: erkans
