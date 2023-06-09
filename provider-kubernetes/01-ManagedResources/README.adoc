@@ -10,6 +10,7 @@ Managed resources are the kubernetes representation of the external objects we w
 == Learning Goals:
 
 * `forProvider` and `atProvider`
+* Providers are not "transparent"
 * `deletionPolicy`
 
 Switch to the topics directory
@@ -53,68 +54,88 @@ Expected: We can see the manifest of our external resource in `atProvider`.
 
 == Reconciliation
 
-Add a label to the managed resource
-
-[source,shell]
-----
-kubectl patch --type=merge object.kubernetes.crossplane.io kubernetes-provider-pod -p '{"spec":{"forProvider":{"manifest":{"metadata":{"labels":{"changes":"propagate"}}}}}}'
-kubect describe pod -n default pod
-----
-
-Expected: `forProvider` is to `atProvider` what `spec` is to `status`. The change propagated, the provider reconciled the external resource.
-
-remove the labels from the external resource
-
-[source,shell]
-----
-kubectl label pods -n default pod changes- example-
-kubect describe pod -n default pod
-----
-
-Expected: The labels are added again by the provider-kubernetes. Reconciliation works in both directions.
-
-== Reconciliation
-
 Delete the external resource
 
 [source,shell]
-
 ----
-kubectl delete pod -n default pod
+kubectl delete pod -n default kubernetes-provider-pod
 kubectl get pods -n default
 ----
 
-Expected: The external resource vanishes and gets recreated.
+Expected: The Pod is recreated (it takes a while)
 
-So Crossplane acts like a ReplicaSet/ArgoCD/Flux
+== Reconciliation
 
-== Delete the managed resource:
+Delete the managed resource
 
 [source,shell]
 ----
-kubectl delete object.kubernetes.crossplane.io kubernetes-provider-pod
-kubectl get pods -n default
+kubectl delete object kubernetes-provider-pod
+kubectl get objects,pods
 ----
 
-Expected: The external resource vanishes as well
+Expected: Both Pod and Managed Resource are gone
 
-== Create another managed resource
+== Reconciliation
+
+Let's create another resource and see how changes propagate
 
 [source,shell]
 ----
 kubectl apply -f simple.deploy.yaml
-kubectl get deployments -n default
+kubectl get pods,deployments
+kubectl patch --type=merge object kubernetes-provider-deploy -p '{"spec":{"forProvider":{"manifest":{"spec":{"replicas": 2}}}}}'
+kubect get pods,deployments
 ----
 
-Expected: An external resource (`Deployment`) was created.
+Expected: We have now have two replicas :)
 
-== Delete the managed resource
+== Reconciliation
+
+Let's do it the other way around and see what happens
 
 [source,shell]
 ----
-kubectl delete object.kubernetes.crossplane.io kubernetes-provider-deploy
+kubectl scale --replicas=3 -n default deployment kubernetes-provider-deploy
+----
+
+Expected: We first have 3 Replicas, but it reconciles back to 2
+
+Actual: Nope. This is a https://github.com/crossplane-contrib/provider-kubernetes/issues/37["known issue"]. The issue author (Koloss)
+found out that the provider-kubernetes uses the `last-applied-configuration` to detect drift, so it only detects changes done via `kubectl apply` 🤯
+
+So, lets's do it as Koloss suggests:
+
+[source, shell]
+----
+kubectl get deployment kubernetes-provider-deploy -oyaml -n default | sed 's/^  replicas: 3/  replicas: 3/' | kubectl apply -f -
+----
+
+Expected: Now it scales back to 2, as specified in the Managed Resource
+
+I have to know about implementation details of my Provider, not only about the API I am using and k8s.
+
+== Cleanup 🧹
+
+Let's delete the Managed
+
+[source,shell]
+----
+kubectl delete object kubernetes-provider-deploy
 kubectl get deployments -n default
 ----
-Expected: The external resource stays behind
+Expected: Deployment and Pods are gone.
+
+Actual: It is still around? 🤔
 
 The difference lies in the `deletionPolicy`. The managed resource for the `Deployment` had a `deletionPolicy` of `Orphan`, so the provider will not try to delete the external resource.
+
+Let's clean up the rest:
+
+[source,shell]
+----
+kubectl delete deployment -n default kubernetes-provider-deploy
+kubectl get deployments -n default
+----
+
+Now it is nice and clean ✨
