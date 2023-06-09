@@ -1,0 +1,6 @@
+kind: coco
+apiVersion: linsenraum.de/v1alpha1
+metadata:
+  name: crossplaneworkshop
+spec:
+  vanilla: "nagut"

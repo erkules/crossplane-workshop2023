@@ -3,7 +3,7 @@ kind: Composition
 metadata:
   name: xselect.acme.example.org
   labels:
-    hallo: gold
+    nimm: twoobjetcts
 spec:
   writeConnectionSecretsToNamespace: crossplane-system
   compositeTypeRef:

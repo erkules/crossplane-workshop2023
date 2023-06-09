@@ -3,7 +3,7 @@ kind: Composition
 metadata:
   name: xselect2.acme.example.org
   labels:
-    hallo: welt
+    nimm: oneobject
 spec:
   writeConnectionSecretsToNamespace: crossplane-system
   compositeTypeRef:

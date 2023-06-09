@@ -7,5 +7,5 @@ metadata:
 spec:
   compositionSelector:
     matchLabels:
-      hallo: welt
+      nimm: twoobjetcts
   lala:      hallo
