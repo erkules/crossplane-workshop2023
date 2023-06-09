@@ -3,13 +3,11 @@
 * Next we will play with managed resources
 * To create external resources
 
-
-
 == Managed Resources
 
 Managed resources are the kubernetes representation of the external objects we want to create.
 
-== Leaening Goals:
+== Learning Goals:
 
 * `forProvider` and `atProvider`
 * `deletionPolicy`
