@@ -12,8 +12,6 @@ Managed resources are the kubernetes representation of the external objects we w
 * `forProvider` and `atProvider`
 * `deletionPolicy`
 
-Start two watches and keep them running: 
-
 For following the resources created by crossplane
 
 ----
