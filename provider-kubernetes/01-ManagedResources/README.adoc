@@ -46,7 +46,7 @@ Expected: The external resource (`Pod`) is being created
 [source,shell]
 ----
 kubectl describe object.kubernetes.crossplane.io kubernetes-provider-pod
-kubectl get object kubernetes-provider-yaml
+kubectl get object kubernetes-provider-pod -o yaml
 ----
 
 Expected: We can see the manifest of our external resource in `atProvider`.
