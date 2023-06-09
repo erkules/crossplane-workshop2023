@@ -15,7 +15,7 @@ Managed resources are the kubernetes representation of the external objects we w
 For following the resources created by crossplane
 
 ----
-watch -n 1 kubectl get pods -n default` 
+watch -n 1 kubectl get pods,deployments -n default` 
 ----
 
 For following the crossplane resources
