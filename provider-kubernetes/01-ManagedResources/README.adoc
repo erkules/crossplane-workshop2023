@@ -12,10 +12,16 @@ Managed resources are the kubernetes representation of the external objects we w
 * `forProvider` and `atProvider`
 * `deletionPolicy`
 
+Switch to the topics directory
+
+----
+cd provider-kubernetes/01-ManagedResources
+----
+
 For following the resources created by crossplane
 
 ----
-watch -n 1 kubectl get pods,deployments -n default` 
+watch -n 1 kubectl get pods,deployments -n default 
 ----
 
 For following the crossplane resources
@@ -28,7 +34,7 @@ watch -n 1 kubectl get crossplane
 
 [source,shell]
 ----
-kubectl apply -f provider-kubernetes/01-ManagedResources/simple.pod.yaml
+kubectl apply -f simple.pod.yaml
 kubectl get deploy,pods -n default
 ----
 
@@ -93,7 +99,7 @@ Expected: The external resource vanishes as well
 
 [source,shell]
 ----
-kubectl apply -f provider-kubernetes/01-ManagedResources/simple.deploy.yaml
+kubectl apply -f simple.deploy.yaml
 kubectl get deployments -n default
 ----
 
