@@ -1,0 +1,8 @@
+== Compositions and Composite Resources
+Compositions and CompositeResources allow us to mix and match multiple external resources.
+
+Learning goals:
+- The Magic triangle between `CompositeResourceDefinition`, `Composition` and `Claim`
+- How to configure Compositions from Claims
+- Why names are important
+- How to organize Patches

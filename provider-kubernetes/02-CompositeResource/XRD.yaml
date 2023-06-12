@@ -1,0 +1,29 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xcompositionexamples.acme.example.org
+spec:
+  connectionSecretKeys:
+    - kubeconfig
+  group: acme.example.org
+  names:
+    kind:     XCompositionExample
+    plural:   xcompositionexamples
+  claimNames:           # Claims are namespaced Objects
+    kind:     CompositionExample
+    plural:   compositionexamples
+  versions:
+    - name: v1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          descrition: A simple Service
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                replicas:
+                  type: integer
+                  description: number of replicas to roll out
