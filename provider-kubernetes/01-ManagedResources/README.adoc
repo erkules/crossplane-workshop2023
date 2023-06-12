@@ -13,6 +13,7 @@ Managed resources are the kubernetes representation of the external objects we w
 * Providers are not "transparent"
 * `deletionPolicy`
 
+== Prepare the Terminal
 Switch to the topics directory
 
 [source,shell]
@@ -104,6 +105,7 @@ Expected: We first have 3 Replicas, but it reconciles back to 2
 Actual: Nope. This is a https://github.com/crossplane-contrib/provider-kubernetes/issues/37["known issue"]. The issue author (Koloss)
 found out that the provider-kubernetes uses the `last-applied-configuration` to detect drift, so it only detects changes done via `kubectl apply` 🤯
 
+== Reconciliation
 So, lets's do it as Koloss suggests:
 
 [source, shell]
@@ -115,7 +117,7 @@ Expected: Now it scales back to 2, as specified in the Managed Resource
 
 I have to know about implementation details of my Provider, not only about the API I am using and k8s.
 
-== Cleanup 🧹
+== Cleanup? 🧹
 
 Let's delete the Managed
 
@@ -130,6 +132,7 @@ Actual: It is still around? 🤔
 
 The difference lies in the `deletionPolicy`. The managed resource for the `Deployment` had a `deletionPolicy` of `Orphan`, so the provider will not try to delete the external resource.
 
+== Cleanup! 🧹
 Let's clean up the rest:
 
 [source,shell]
