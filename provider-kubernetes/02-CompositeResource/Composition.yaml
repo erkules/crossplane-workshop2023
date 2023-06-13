@@ -1,15 +1,15 @@
 apiVersion: apiextensions.crossplane.io/v1
 kind: Composition
 metadata:
-  name: xcompositionexamples.acme.example.org
+  name: xmyfirstcomposition.acme.example.org
   labels:
     provider: kubernetes-provider
-    crossplane.io/xrd: xcomposition-examples.acme.example.org
+    crossplane.io/xrd: xmyfirstcompositeresources.acme.example.org
 spec:
   writeConnectionSecretsToNamespace: crossplane-system
   compositeTypeRef:
     apiVersion: acme.example.org/v1
-    kind: xcompositionexample
+    kind: XMyFirstCompositeResource
   resources:
     - base:
         apiVersion: kubernetes.crossplane.io/v1alpha1
@@ -22,7 +22,8 @@ spec:
               apiVersion: apps/v1
               kind: Deployment
               metadata:
-                name: my-deployment
+                namespace: default
+                name: example-deployment
               spec:
                 strategy:
                   type: RollingUpdate
@@ -32,22 +33,18 @@ spec:
                 minReadySeconds: 4
                 selector:
                   matchLabels:
-                    app: my-service
+                    app: example-app
                 template:
                   metadata:
-                    name: my-service
+                    name: example-deployment-pod
                     labels:
-                      app: my-service
+                      app: example-app
                   spec:
                     terminationGracePeriodSeconds: 2
                     containers:
                     - name: image1
                       image: erkules/nginxhostname:v1
       patches:
-        - fromFieldPath: "metadata.labels[crossplane.io/claim-name]"
-          toFieldPath:   "spec.forProvider.manifest.metadata.name"
-        - fromFieldPath: "metadata.labels[crossplane.io/claim-namespace]"
-          toFieldPath:   "spec.forProvider.manifest.metadata.namespace"
         - fromFieldPath: "spec.replicas"
           toFieldPath:   "spec.forProvider.manifest.spec.replicas"
     - base:
@@ -61,14 +58,11 @@ spec:
               apiVersion: v1
               kind: Service
               metadata:
-                name: my-service
+                name: example-service
+                namespace: default
               spec:
                 ports:
                 - port: 8080
                 selector:
-                  app: my-service
-      patches:
-        - fromFieldPath: "metadata.labels[crossplane.io/claim-namespace]"
-          toFieldPath:   "spec.forProvider.manifest.metadata.namespace"
-        - fromFieldPath: "metadata.labels[crossplane.io/claim-name]"
-          toFieldPath:   "spec.forProvider.manifest.metadata.name"
+                  app: example-app
+

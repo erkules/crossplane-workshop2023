@@ -1,6 +1,6 @@
 apiVersion: acme.example.org/v1
-kind: compositionexample
+kind: MyFirstCompositeResource
 metadata:
-  name: composition-example-claim-2
+  name: second-example-claim
 spec:
   replicas: 2

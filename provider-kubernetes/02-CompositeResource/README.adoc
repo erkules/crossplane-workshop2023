@@ -2,7 +2,245 @@
 Compositions and CompositeResources allow us to mix and match multiple external resources.
 
 Learning goals:
-- The Magic triangle between `CompositeResourceDefinition`, `Composition` and `Claim`
-- How to configure Compositions from Claims
-- Why names are important
-- How to organize Patches
+* The Magic Triangle between `CompositeResourceDefinition`, `Composition` and `Claim`
+* Why Events are important
+* How to configure Compositions from Claims
+* How to organize Patches
+
+== Preparation
+Move to the lessons directory
+
+[source,shell]
+----
+cd provider-kubernetes/02-CompositeResource
+----
+
+Start some watches
+[source,shell]
+----
+watch -n 1 kubectl get crds,xrds
+----
+
+== CompositeResourceDefinition
+Let's create our first XRD
+
+[source,shell]
+----
+kubectl apply -f CompositeResourceDefinition.yaml
+----
+
+Expected:
+* A CRD was created
+* The XRD is Established
+
+Let's peek inside
+
+[source,shell]
+----
+kubectl describe crd xmyfirstcompositeresources.acme.example.org | less
+----
+
+* Crossplane adds a lot of stuff
+* Some of it we'll discuss later
+
+== Claims: Offer an XR
+To offer a CompositeResource we need Crossplane to generate a Claim
+
+Uncomment the Lines after `claimNames` and apply
+
+[source,shell]
+----
+kubectl apply -f CompositeResourceDefinition.yaml
+----
+
+Expected
+* A second CRD was created
+* The XRD is now offered
+
+== Claims
+Let's create a Claim and see what happens
+
+[source,shell]
+----
+kubectl apply -f Claim.yaml
+----
+
+Expected:
+* The Claim is not Ready
+
+Let's find out why!
+
+[source,shell]
+----
+kubectl describe claim first-example-claim | less
+----
+
+Expected:
+* If something goes wrong, an Event is emitted
+* It's waiting for the `CompositeResource` to become ready
+
+== Claims
+Then let's have a look at the CompositeResource
+
+[source,shell]
+----
+kubectl describe composite | more
+----
+
+Expected:
+* No compatible Composition found
+
+== Compositions
+So, let's create a Composition! A simple one, containing a Deployment and a Service
+
+[source,shell]
+----
+kubectl apply -f Composition.yaml
+kubectl get deployments,services
+kubectl get crossplane
+----
+
+Expected:
+* The Claim becomes ready!
+* There is a Service and a Deployment! Success!
+* There are new Objects!
+** `ProviderConfigUsages` prevent a `ProviderConfig` from being deleted while in use
+** `objects.kubernetes.crossplane.io/v1alpha1` are the ManagedResources
+
+== Compositions
+Let's filter all results for the Objects belonging to our Claim
+
+[source,shell]
+----
+kubectl get crossplane,composite -l 'crossplane.io/claim-name=first-example-claim'
+----
+
+* `ProviderConfigUsages` are not labeled with the `claim-name`
+* Does anybody know why we have to specify the `composite`? It is in the Category `crossplane`
+
+== Using Claims to Configure Resources
+Kill the old watches and start new watches
+
+[source,shell]
+----
+watch -n 1 kubectl get deployments,pods,services,claims,managed
+----
+
+Four Replicas is way too much! Let's make it two
+
+[source,shell]
+----
+kubectl patch claim first-example-claim --type merge -p '{"spec":{"replicas": 2}}'
+----
+
+Expected:
+* Two Pods vanish. Success!
+
+== Let's Make It Double
+Let's create another Claim and see what happens
+
+[source,shell]
+----
+kubectl apply -f Claim-2.yaml
+----
+
+Expected:
+* A second Claim, Synced and Ready
+* New MRs, Synced and Ready
+* But ... no second deployment?
+
+== Fun with Claims
+Let's see what happens when we change one of the claims:
+
+[source,shell]
+----
+kubectl patch claim first-example-claim --type merge -p '{"spec":{"replicas": 4}}'
+----
+
+Expected:
+* Both "truths" are applied ad nauseam
+* I've seen this on AWS Resource
+** The first Resource defines Tags (for a SecurityGroup)
+** A separate Tag resource adds a Tag
+** The SecurityGroup Controller removes the Tag
+** The Claim never became Ready
+
+== Using claim-name and claim-namespace
+Let's fix this by using different names
+
+[source,shell]
+----
+kubectl apply -f CompositionWithPatching.yaml
+----
+
+Expected:
+* The new names are applied
+* The old resources stay behind?
+
+Let's clean up the leftovers
+[source,shell]
+----
+kubectl delete deployment my-deployment
+kubectl delete service my-service
+----
+
+== Rolling out Changes
+We can change all `XRs`` by changing the `Composition``.
+
+Let's change the service Port to 8081
+
+[source,shell]
+----
+kubectl edit composition xmyfirstcomposition.acme.example.org
+----
+
+Expected:
+* Both services now use 8081
+
+== Opting out of Updates
+We can opt out of updates by changing the `compositionUpdatePolicy` to `Manual` and the Service Port back to 8080
+
+[source,shell]
+----
+kubectl patch claim first-example-claim --type=merge -p '{"spec":{"compositionUpdatePolicy": "Manual"}}'
+kubectl edit composition xmyfirstcomposition.acme.example.org
+----
+
+Expected:
+* Only the second `Service` changed
+
+== Manually Update Composition via Claim
+We can update the `compositionRef` manually
+
+First we list the `CompositionRevisions`, then we use the name of the newest `CompositionRevision`
+
+[source,shell]
+----
+kubectl get compositionrevisions
+kubectl patch claim first-example-claim --type=merge -p '{"spec":{"compositionRevisionRef":{"name":"xmyfirstcomposition.acme.example.org-5b0265f"}}}'
+kubectl get claim,composite -o=custom-columns='NAME:.metadata.name,REF:.spec.compositionRevisionRef.name'
+----
+
+Expected:
+* The first `Service` still uses port 8081
+* There seems to be a bug - the `compositionRevisionRef` is not transferred from the `Claim` to the `XR`
+
+== Manually Update Composition via Composite
+So, let's see if we can fix it by updating the `XR`
+
+[source,shell]
+----
+kubectl patch composite my-first-composite-resource-claim-lmmbd --type=merge -p '{"spec":{"compositionRevisionRef":{"name":"xmyfirstcomposition.acme.example.org-5b0265f"}}}'
+----
+
+* Success!
+
+== Cleanup
+Let's get rid of all the Stuff we created
+
+[source,shell]
+----
+kubectl delete xrd xmyfirstcompositeresources.acme.example.org
+----
+
+* That was easy :)
