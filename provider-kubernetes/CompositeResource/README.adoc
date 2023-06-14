@@ -244,3 +244,4 @@ kubectl delete xrd xmyfirstcompositeresources.acme.example.org
 ----
 
 * That was easy :)
+* And scary 😱
