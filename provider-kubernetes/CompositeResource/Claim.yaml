@@ -1,0 +1,6 @@
+apiVersion: acme.example.org/v1
+kind: MyFirstCompositeResource
+metadata:
+  name: first-example-claim
+spec:
+  replicas: 4

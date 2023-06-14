@@ -1,0 +1,68 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: xmyfirstcomposition.acme.example.org
+  labels:
+    provider: kubernetes-provider
+    crossplane.io/xrd: xmyfirstcompositeresources.acme.example.org
+spec:
+  writeConnectionSecretsToNamespace: crossplane-system
+  compositeTypeRef:
+    apiVersion: acme.example.org/v1
+    kind: XMyFirstCompositeResource
+  resources:
+    - base:
+        apiVersion: kubernetes.crossplane.io/v1alpha1
+        kind: Object
+        spec:
+          providerConfigRef: 
+            name:  'kubernetes-provider'
+          forProvider:
+            manifest:
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                namespace: default
+                name: example-deployment
+              spec:
+                strategy:
+                  type: RollingUpdate
+                  rollingUpdate:
+                    maxUnavailable: 1
+                    maxSurge: 1
+                minReadySeconds: 4
+                selector:
+                  matchLabels:
+                    app: example-app
+                template:
+                  metadata:
+                    name: example-deployment-pod
+                    labels:
+                      app: example-app
+                  spec:
+                    terminationGracePeriodSeconds: 2
+                    containers:
+                    - name: image1
+                      image: erkules/nginxhostname:v1
+      patches:
+        - fromFieldPath: "spec.replicas"
+          toFieldPath:   "spec.forProvider.manifest.spec.replicas"
+    - base:
+        apiVersion: kubernetes.crossplane.io/v1alpha1
+        kind: Object
+        spec:
+          providerConfigRef: 
+            name:  'kubernetes-provider'
+          forProvider:
+            manifest:
+              apiVersion: v1
+              kind: Service
+              metadata:
+                name: example-service
+                namespace: default
+              spec:
+                ports:
+                - port: 8080
+                selector:
+                  app: example-app
+

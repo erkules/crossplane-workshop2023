@@ -5,22 +5,29 @@
 * We also create a ServiceAccount for this Provider.
 * And tell the Provider to use this ServiceAccount.
 
+Move to the lessons's directory
 
+[source,shell]
 ----
-kubectl apply -f provider-kubernetes/00-Setup/Provider.yaml
+cd provider-kubernetes/Setup
+----
+
+== Install the Provider
+[source,shell]
+----
+kubectl apply -f Provider.yaml
 kubectl -n crossplane-system  get pods
 ----
 
 Just wait till the installation is healthy
 
+[source,shell]
 ----
 kubectl get providers
 ----
 
-
-
 == Let's see
-
+[source,shell]
 ----
 $ kubectl api-resources --api-group=kubernetes.crossplane.io
 NAME                   SHORTNAMES   APIVERSION                          NAMESPACED   KIND
@@ -36,11 +43,10 @@ providerconfigusages                kubernetes.crossplane.io/v1alpha1   false   
 ** I.e. remote clusters
 * We just want to address the local cluster.
 
+[source,shell]
 ----
-kubectl apply -f provider-kubernetes/00-Setup/ProviderConfig.yaml
+kubectl apply -f ProviderConfig.yaml
 ----
-
-
 
 == Objects
 

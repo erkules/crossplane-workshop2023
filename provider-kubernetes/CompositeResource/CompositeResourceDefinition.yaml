@@ -1,24 +1,24 @@
 apiVersion: apiextensions.crossplane.io/v1
 kind: CompositeResourceDefinition
 metadata:
-  name: xservices.acme.example.org
+  name: xmyfirstcompositeresources.acme.example.org
 spec:
   connectionSecretKeys:
     - kubeconfig
   group: acme.example.org
   names:
-    kind:     xservice
-    plural:   xservices 
-  claimNames:           # Claims are namespaced Objects
-    kind:     service
-    plural: services
+    kind:     XMyFirstCompositeResource
+    plural:   xmyfirstcompositeresources
+#  claimNames:           # Claims are namespaced Objects
+#    kind:     MyFirstCompositeResource
+#    plural:   myfirstcompositeresources
   versions:
     - name: v1
       served: true
       referenceable: true
       schema:
         openAPIV3Schema:
-          descrition: A simple Service
+          description: A Simple CompositeResource Example
           type: object
           properties:
             spec:
