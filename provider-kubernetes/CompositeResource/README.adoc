@@ -12,7 +12,7 @@ Move to the lessons directory
 
 [source,shell]
 ----
-cd provider-kubernetes/02-CompositeResource
+cd provider-kubernetes/CompositeResource
 ----
 
 Start some watches

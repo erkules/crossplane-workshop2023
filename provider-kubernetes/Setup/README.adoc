@@ -5,11 +5,11 @@
 * We also create a ServiceAccount for this Provider.
 * And tell the Provider to use this ServiceAccount.
 
-Move to the setup directory
+Move to the lessons's directory
 
 [source,shell]
 ----
-cd provider-kubernetes/00-Setup
+cd provider-kubernetes/Setup
 ----
 
 == Install the Provider
