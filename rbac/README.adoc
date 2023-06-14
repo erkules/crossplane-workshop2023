@@ -17,7 +17,9 @@
 
 == Walkthrough 
 
-We assume we have still the Composite Resource Definition from 02
+* We assume we have still the Composite Resource Definition from 02
+* On the other hand they should be gone
+* So deploy them again
 
 ----
 $ kubectl get crd xmyfirstcompositeresources.acme.example.org
@@ -75,7 +77,7 @@ Error from server (Forbidden): myfirstcompositeresources.acme.example.org is for
 We request the resource in the correct namespace:
 
 ----
-kubectl -n rbac-crossplen --as devopscon get MyFirstCompositeResource 
+kubectl -n rbac-crossplane --as devopscon get MyFirstCompositeResource 
 ----
 
 Expected:
@@ -89,7 +91,7 @@ No resources found in rbac-crossplane namespace.
 * Create a Claim impersonating the user devopscon
 
 ----
-kubectl --as devopscon -n rbac-crossplane apply -f ../02-CompositeResource/Claim.yaml
+kubectl --as devopscon -n rbac-crossplane apply -f ../CompositeResource/Claim.yaml
 kubectl --as devopscon -n rbac-crossplane get myfirstcompositeresource
 ----
 

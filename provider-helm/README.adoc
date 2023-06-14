@@ -1,0 +1,173 @@
+
+
+== Idea
+
+* Use the Provider CRDs
+* Create XRD
+* Create Composition
+
+== Installation
+
+We need to install the Provider
+
+----
+kubectl apply -f provider-helm/provider.yaml
+----
+
+Check the new Pod
+
+----
+kubectl -n crossplane-system get pods
+----
+
+== New CRDs
+
+----
+$ kubectl api-resources --api-group=helm.crossplane.io
+NAME                   SHORTNAMES   APIVERSION                   NAMESPACED   KIND
+providerconfigs                     helm.crossplane.io/v1beta1   false        ProviderConfig
+providerconfigusages                helm.crossplane.io/v1beta1   false        ProviderConfigUsage
+releases                            helm.crossplane.io/v1beta1   false        Release
+----
+
+== ProviderConfig
+
+We need to tell the Pod/Provider which Credentials to use
+
+Lets empower the ServiceAccount the helm-provider runs with:
+
+----
+SA=$(kubectl -n crossplane-system get sa -o name | grep provider-helm | sed -e 's|serviceaccount\/|crossplane-system:|g')
+kubectl create clusterrolebinding provider-helm-admin-binding --clusterrole cluster-admin --serviceaccount="${SA}"
+----
+
+
+== Applying ProviderConfig
+
+----
+kubectl apply -f provider-helm/providerconfig.yaml
+----
+
+== Let's create a HelmRelease
+
+* This example uses directly the release object
+* Nothing from the Crossplane "overhead" is used
+
+----
+kubectl apply -f kafka-release.yaml --wait
+kubectl get releases.helm.crossplane.io
+----
+
+== Pro Tip
+
+Get all Resorces managed by Crossplane
+
+----
+kubectl get managed
+----
+
+
+== New Columns
+
+----
+$ kubectl get releases.helm.crossplane.io 
+NAME            CHART   VERSION   SYNCED   READY   STATE      REVISION   DESCRIPTION        AGE
+kafka-example   kafka   19.1.4    True     True    deployed   1          Install complete   4m36s
+----
+
+SYNCED tells us about the connection to the API 
+
+== Reconciliation Loop
+
+* We got a helm release
+
+----
+helm -n kafka ls
+----
+
+Deleting the Helm Release should trigger the Controller
+
+
+----
+helm -n kafka delete kafka-example
+----
+
+Check it out :)
+
+== Getting Crossplane on the Road
+
+* We start with a simple example
+* Using the release CRD
+* We would be to utilise all the `values.yaml`
+
+== Changing Hats
+
+As a Consumer
+
+* I want to use Kafka
+* In a simple way
+
+As an Infra/Ops
+
+* I want to provide a Kafka API/CRD
+* Hiding complexity
+* Reducing 'attack' vectors
+
+== The Idea
+
+* Create an XRD kafka.example.org
+* Having only replicas configurable
+* Create the matching XR
+* Have fun
+
+== Cleaning Woman
+
+----
+kubectl delete -f kafka-release.yaml 
+----
+
+image::dead-men-dont-wear-plaid-cleaning-woman.gif[]
+
+== We create the XRD 
+
+* Lets start with the Consumer side
+* kafka.acme.example.org
+* Lets use `anzahl` to define the number of replicas
+
+----
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name:  kafka.acme.example.org
+spec:
+  group: acme.example.org
+  names:  kafka
+    kind:
+  versions: <<-- Standard openAPVv3 Schema
+----
+
+
+== XRD
+
+---
+kubectl apply -f provider-helm/xrd.yaml
+kubectl get xrd
+---
+
+Let's have a look into the file
+
+== Compostion
+
+---
+kubectl apply -f provider-helm/composition.yaml
+kubectl get compostions
+---
+
+Let's have a look into the file
+
+== Compostion Questions
+
+* How ist the Compostion connected to the XRD
+* 
+
+
