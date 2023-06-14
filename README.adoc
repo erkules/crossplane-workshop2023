@@ -86,7 +86,7 @@ We just use Helm to install the framework:
 kubectl api-resources --api-group=apiextensions.crossplane.io
 helm repo add crossplane-stable https://charts.crossplane.io/stable
 helm repo update
-helm upgrade --install crossplane --create-namespace -n crossplane-system  crossplane-stable/crossplane --wait
+helm upgrade --install crossplane --create-namespace -n crossplane-system --set metrics.enabled=true crossplane-stable/crossplane --wait
 kubectl api-resources --api-group=apiextensions.crossplane.io
 ----
 
