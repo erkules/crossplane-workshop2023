@@ -3,8 +3,10 @@ Compositions and CompositeResources allow us to mix and match multiple external 
 
 Learning goals:
 * The Magic Triangle between `CompositeResourceDefinition`, `Composition` and `Claim`
+** Understanding this is half the game!
 * Why Events are important
-* How to configure Compositions from Claims
+* How to configure `Compositions` from `Claims`
+* How `Composites` find their `Composition` (a bit)
 * How to organize Patches
 
 == Preparation
@@ -21,7 +23,7 @@ Start some watches
 watch -n 1 kubectl get crds,xrds
 ----
 
-== CompositeResourceDefinition
+== CompositeResourceDefinition (XRD)
 Let's create our first XRD
 
 [source,shell]
@@ -29,7 +31,6 @@ Let's create our first XRD
 kubectl apply -f CompositeResourceDefinition.yaml
 ----
 
-Expected:
 * A CRD was created
 * The XRD is Established
 
@@ -65,7 +66,6 @@ Let's create a Claim and see what happens
 kubectl apply -f Claim.yaml
 ----
 
-Expected:
 * The Claim is not Ready
 
 Let's find out why!
@@ -75,7 +75,6 @@ Let's find out why!
 kubectl describe claim first-example-claim | less
 ----
 
-Expected:
 * If something goes wrong, an Event is emitted
 * It's waiting for the `CompositeResource` to become ready
 
@@ -87,7 +86,6 @@ Then let's have a look at the CompositeResource
 kubectl describe composite | more
 ----
 
-Expected:
 * No compatible Composition found
 
 == Compositions
@@ -100,7 +98,6 @@ kubectl get deployments,services
 kubectl get crossplane
 ----
 
-Expected:
 * The Claim becomes ready!
 * There is a Service and a Deployment! Success!
 * There are new Objects!
@@ -133,7 +130,6 @@ Four Replicas is way too much! Let's make it two
 kubectl patch claim first-example-claim --type merge -p '{"spec":{"replicas": 2}}'
 ----
 
-Expected:
 * Two Pods vanish. Success!
 
 == Let's Make It Double
@@ -157,7 +153,6 @@ Let's see what happens when we change one of the claims:
 kubectl patch claim first-example-claim --type merge -p '{"spec":{"replicas": 4}}'
 ----
 
-Expected:
 * Both "truths" are applied ad nauseam
 * I've seen this on AWS Resource
 ** The first Resource defines Tags (for a SecurityGroup)
@@ -173,7 +168,6 @@ Let's fix this by using different names
 kubectl apply -f CompositionWithPatching.yaml
 ----
 
-Expected:
 * The new names are applied
 * The old resources stay behind?
 
@@ -185,7 +179,7 @@ kubectl delete service my-service
 ----
 
 == Rolling out Changes
-We can change all `XRs`` by changing the `Composition``.
+We can change all `XRs` by changing the `Composition`.
 
 Let's change the service Port to 8081
 
@@ -194,7 +188,6 @@ Let's change the service Port to 8081
 kubectl edit composition xmyfirstcomposition.acme.example.org
 ----
 
-Expected:
 * Both services now use 8081
 
 == Opting out of Updates
@@ -206,7 +199,6 @@ kubectl patch claim first-example-claim --type=merge -p '{"spec":{"compositionUp
 kubectl edit composition xmyfirstcomposition.acme.example.org
 ----
 
-Expected:
 * Only the second `Service` changed
 
 == Manually Update Composition via Claim
@@ -221,7 +213,6 @@ kubectl patch claim first-example-claim --type=merge -p '{"spec":{"compositionRe
 kubectl get claim,composite -o=custom-columns='NAME:.metadata.name,REF:.spec.compositionRevisionRef.name'
 ----
 
-Expected:
 * The first `Service` still uses port 8081
 * There seems to be a bug - the `compositionRevisionRef` is not transferred from the `Claim` to the `XR`
 
