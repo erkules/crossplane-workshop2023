@@ -1,0 +1,110 @@
+== RBAC
+
+* With Crossplane reduce the complexity of rollouts
+* Let's limit the scope (privileges) of the consumers 
+* So they use (only) the *opinionated platform APIs*
+* using RBAC
+
+== Benefit
+
+* Consumers only create/delete/modify/get the provided platform APIs
+
+== Learning Goals
+
+* Secure operations
+* Simplify operations
+* How to use RBAC
+
+== Walkthrough 
+
+We assume we have still the Composite Resource Definition from 02
+
+----
+$ kubectl get crd xmyfirstcompositeresources.acme.example.org
+NAME                                          CREATED AT
+xmyfirstcompositeresources.acme.example.org   2023-06-13T23:12:23Z
+----
+
+== TODO
+
+* Create namespace `rbac-crossplane` playground
+* Create a Clusterrole for MyFirstCompositeResource.acme.example.org/v1
+* Create a Rolebinding to the user devopscon
+* Create a Claim impersonating the user devopscon
+
+
+== Create namespace `rbac-crossplane` playground
+
+----
+kubectl create ns rbac-crossplane
+----
+
+== ClusterRole
+
+ Create a Clusterrole for MyFirstCompositeResource.acme.example.org/v1
+
+----
+kubectl apply -f consumer-cluster-role.yaml
+----
+
+
+== Rolebinding
+
+* Create a Rolebinding to the user devopscon
+
+----
+kubectl apply -f rolebinding.yaml
+----
+
+== Impersonating
+
+With impersonating we don't need to "create" the user
+
+We request the resource in the default (wrong) namespace:
+
+----
+kubectl                   --as devopscon get MyFirstCompositeResource 
+----
+
+Expected:
+
+~~~~
+Error from server (Forbidden): myfirstcompositeresources.acme.example.org is forbidden: User "devopscon" cannot list resource "myfirstcompositeresources" in API group "acme.example.org" in the namespace "default"
+~~~~
+
+We request the resource in the correct namespace:
+
+----
+kubectl -n rbac-crossplen --as devopscon get MyFirstCompositeResource 
+----
+
+Expected:
+
+----
+No resources found in rbac-crossplane namespace.
+----
+
+== Create a Claim
+
+* Create a Claim impersonating the user devopscon
+
+----
+kubectl --as devopscon -n rbac-crossplane apply -f ../02-CompositeResource/Claim.yaml
+kubectl --as devopscon -n rbac-crossplane get myfirstcompositeresource
+----
+
+== Allow User to view other resources
+
+
+Let's have a terrible output
+
+----
+kubectl --as devopscon -n rbac-crossplane get all
+----
+
+There is no reason not to allow a User to have view-privileges on the other resources in the namespace
+
+----
+kubectl -n rbac-crossplane create rolebinding guggeda --clusterrole=view --user=devopscon
+kubectl -n rbac-crossplane --as devopscon get all
+----

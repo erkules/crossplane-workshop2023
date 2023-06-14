@@ -1,0 +1,104 @@
+== Monitoring
+
+* Visibility is very important in every operations
+* This is where Crossplane still lacks
+
+== Events
+
+* Most important Informations
+* Vanish after on hour
+* Some provider store them in there CRDs
+* Your admins should log the events away
+* I.e. with https://github.com/vmware-archive/eventrouter
+* There are also some log from the (Crossplane/Provider)Pods themself
+* * Not so much most of the time
+
+
+== But Metrics
+
+* We are focusing on metrics
+* So we are using Prometheus
+* Getting started with metrics provided by Crossplane
+* Integrate Objects/CRDs provided by providers into the monitoring
+
+== Learning Goals
+
+* Use metrics to monitor Crossplane
+* Feeling the urge to log events
+* Complaining about the trainers not getting into 
+* * Events->Logs->Loki->Grafana[dashboard,alerts]
+
+== Installing Prometheus
+
+First let's install Prometheus
+
+----
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update prometheus-community
+helm upgrade --install \
+  --namespace prometheus \
+  --create-namespace \
+  --set alertmanager.enabled=false \
+  --set prometheus-node-exporter.enabled=false \
+  --set prometheus-pushgateway.enabled=false \
+  prometheus prometheus-community/prometheus
+----
+
+== Accessing Prometheus
+
+* We just use kubectl tunneling to Prometheus
+* In a terminal:
+
+----
+kubectl port-forward -n prometheus svc/prometheus-server 9090:80
+----
+
+Then simply access Prometheus using http://localhost:9090
+
+Then you can access "standard" controller-runtime metrics (as seen with kubebuilder)
+
+Check [this](https://book.kubebuilder.io/plugins/grafana-v1-alpha.html?highlight=controller_runtime_reconcile_errors_total#grafana-dashboard) for some chart ideas.
+
+Starter:
+
+----
+controller_runtime_reconcile_errors_total
+----
+
+== Monitoring managed resources
+
+* To be honest metrics monitoring sucks
+* Lets have a look how to extend kube-state-metrics
+* Still pain in ..
+
+== Learning Goals
+
+* Repeat RBAC know how
+* How to extend kube-state-metrics
+
+== if (time)
+
+* Show how to write CustomResourceStateMetrics
+* Even we are patching them as inline (later)
+
+== Check objects.kubernetes.crossplane.io/v1alpha1
+
+kubes-state-metrics (the ServiceAccount) need more privileges:
+
+
+----
+kubectl apply -f kube-state-rbac-add.yaml
+----
+
+== Configure kube-state-metrics
+
+----
+kubectl -n prometheus patch deploy prometheus-kube-state-metrics --patch-file  kubestate-patch.yaml
+----
+
+Check (could take some time) for the metric:
+
+----
+kube_customresource_crossplane_kubernetes_object_ready
+----
+

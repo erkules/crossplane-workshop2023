@@ -9,6 +9,6 @@ kubectl get provider.pkg.crossplane.io/provider-aws -w
 
 
 ----
-kubectl create secret generic aws-provider -n crossplane-system --from-file=creds=.aws/credentials
+kubectl create secret generic aws-provider -n crossplane-system --from-file=creds=$HOME/.aws/credentials
 kubectl apply -f providerconfig.yaml
 ----

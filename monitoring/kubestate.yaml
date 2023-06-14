@@ -1,0 +1,19 @@
+- --custom-resource-state-config
+- | 
+    spec: 
+      resources:
+        - groupVersionKind:
+            group: "kubernetes.crossplane.io"
+            kind: "Object"
+            version: "v1alpha1"
+          metrics:
+            - name: "crossplane_kubernetes_object_ready"
+              help: "Crossplane Kubernetes Object Ready"
+              each:
+                type: StateSet
+                stateSet: 
+                  labelName: status
+                  path: [status, conditions, "[type=Ready]", status]
+                  list: [True, False]
+              labelsFromPath:
+                name: [metadata, name]

@@ -2,6 +2,7 @@
 
 run in a Shell:
 
+=== 
 ----
 watch kubectl api-resources --api-group=linsenraum.de
 ----
