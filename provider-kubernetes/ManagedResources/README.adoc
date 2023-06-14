@@ -100,37 +100,36 @@ Let's do it the other way around and see what happens
 kubectl scale --replicas=3 -n default deployment kubernetes-provider-deploy
 ----
 
-Expected: We first have 3 Replicas, but it reconciles back to 2
-
-Actual: Nope. This is a https://github.com/crossplane-contrib/provider-kubernetes/issues/37["known issue"]. The issue author (Koloss)
-found out that the provider-kubernetes uses the `last-applied-configuration` to detect drift, so it only detects changes done via `kubectl apply` 🤯
+* We expected that first have 3 Replicas, then it reconciles back to 2
+* This is a https://github.com/crossplane-contrib/provider-kubernetes/issues/37["known issue"]
+** provider-kubernetes uses the `last-applied-configuration` to detect drift 🤯
 
 == Reconciliation
-So, lets's do it as Koloss suggests:
+So, lets's do it as the issue author Koloss suggests:
 
 [source, shell]
 ----
 kubectl get deployment kubernetes-provider-deploy -oyaml -n default | sed 's/^  replicas: 3/  replicas: 3/' | kubectl apply -f -
 ----
 
-Expected: Now it scales back to 2, as specified in the Managed Resource
-
-I have to know about implementation details of my Provider, not only about the API I am using and k8s.
+* Now it scales back to 2, as specified in the Managed Resource
+* I have to know about implementation details of my Provider ☝️
 
 == Cleanup? 🧹
 
-Let's delete the Managed
+Let's delete the ManagedResource
 
 [source,shell]
 ----
 kubectl delete object kubernetes-provider-deploy
 kubectl get deployments -n default
 ----
-Expected: Deployment and Pods are gone.
 
-Actual: It is still around? 🤔
-
-The difference lies in the `deletionPolicy`. The managed resource for the `Deployment` had a `deletionPolicy` of `Orphan`, so the provider will not try to delete the external resource.
+* Deployment and Pods are gone?
+* It is still around! 🤔
+* Deletion Policy!
+** `Orphan` - Abandon the external resource
+** `Delete` - Clean up after yourself
 
 == Cleanup! 🧹
 Let's clean up the rest:
@@ -141,4 +140,4 @@ kubectl delete deployment -n default kubernetes-provider-deploy
 kubectl get deployments -n default
 ----
 
-Now it is nice and clean ✨
+* Now it is nice and clean ✨
