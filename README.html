@@ -607,7 +607,8 @@ kubectl get claim,composite -o=custom-columns='NAME:.metadata.name,REF:.spec.com
 <section id="_cleanup_3"><h2>Cleanup</h2><div class="slide-content"><div class="paragraph"><p>Let&#8217;s get rid of all the Stuff we created</p></div>
 <div class="listingblock"><div class="content"><pre class="highlight"><code class="language-shell" data-lang="shell">kubectl delete xrd xmyfirstcompositeresources.acme.example.org</code></pre></div></div>
 <div class="ulist"><ul><li><p>That was easy :)</p></li><li><p>And scary 😱</p></li></ul></div></div></section>
-<section id="_rbac"><h2>RBAC</h2><div class="slide-content"><div class="ulist"><ul><li><p>With Crossplane reduce the complexity of rollouts</p></li><li><p>Let&#8217;s limit the scope (privileges) of the consumers</p></li><li><p>So they use (only) the <strong>opinionated platform APIs</strong></p></li><li><p>using RBAC</p></li></ul></div></div></section>
+<section id="_rbac"><h2>RBAC</h2><div class="slide-content"><div class="paragraph"><p>Directory: ./rbac</p></div>
+<div class="ulist"><ul><li><p>With Crossplane reduce the complexity of rollouts</p></li><li><p>Let&#8217;s limit the scope (privileges) of the consumers</p></li><li><p>So they use (only) the <strong>opinionated platform APIs</strong></p></li><li><p>using RBAC</p></li></ul></div></div></section>
 <section id="_benefit"><h2>Benefit</h2><div class="slide-content"><div class="ulist"><ul><li><p>Consumers only create/delete/modify/get the provided platform APIs</p></li></ul></div></div></section>
 <section id="_learning_goals_2"><h2>Learning Goals</h2><div class="slide-content"><div class="ulist"><ul><li><p>Secure operations</p></li><li><p>Simplify operations</p></li><li><p>How to use RBAC</p></li></ul></div></div></section>
 <section id="_walkthrough"><h2>Walkthrough</h2><div class="slide-content"><div class="ulist"><ul><li><p>We assume we have still the Composite Resource Definition from 02</p></li><li><p>On the other hand they should be gone</p></li><li><p>So deploy them again</p></li></ul></div>
@@ -624,10 +625,8 @@ xmyfirstcompositeresources.acme.example.org   2023-06-13T23:12:23Z</pre></div></
 <div class="paragraph"><p>We request the resource in the default (wrong) namespace:</p></div>
 <div class="listingblock"><div class="content"><pre>kubectl                   --as devopscon get MyFirstCompositeResource</pre></div></div>
 <div class="paragraph"><p>Expected:</p></div>
-<div class="paragraph"><p><sub>~</sub>~
-Error from server (Forbidden): myfirstcompositeresources.acme.example.org is forbidden: User "devopscon" cannot list resource "myfirstcompositeresources" in API group "acme.example.org" in the namespace "default"
-<sub>~</sub>~</p></div>
-<div class="paragraph"><p>We request the resource in the correct namespace:</p></div>
+<div class="listingblock"><div class="content"><pre>Error from server (Forbidden): myfirstcompositeresources.acme.example.org is forbidden: User "devopscon" cannot list resource "myfirstcompositeresources" in API group "acme.example.org" in the namespace "default"</pre></div></div></div></section>
+<section id="_ah_wrong_namespace"><h2>Ah wrong namespace</h2><div class="slide-content"><div class="paragraph"><p>We request the resource in the correct namespace:</p></div>
 <div class="listingblock"><div class="content"><pre>kubectl -n rbac-crossplane --as devopscon get MyFirstCompositeResource</pre></div></div>
 <div class="paragraph"><p>Expected:</p></div>
 <div class="listingblock"><div class="content"><pre>No resources found in rbac-crossplane namespace.</pre></div></div></div></section>
@@ -639,16 +638,14 @@ kubectl --as devopscon -n rbac-crossplane get myfirstcompositeresource</pre></di
 <div class="paragraph"><p>There is no reason not to allow a User to have view-privileges on the other resources in the namespace</p></div>
 <div class="listingblock"><div class="content"><pre>kubectl -n rbac-crossplane create rolebinding guggeda --clusterrole=view --user=devopscon
 kubectl -n rbac-crossplane --as devopscon get all</pre></div></div></div></section>
-<section id="_multiprovider"><h2>Multiprovider</h2><div class="slide-content"><div class="paragraph"><p>Dir: <code>.provider-kubernetes/MultiProvider</code></p></div>
+<section id="_multiprovider"><h2>Multiprovider</h2><div class="slide-content"><div class="paragraph"><p>Dir: <code>./provider-kubernetes/MultiProvider</code></p></div>
 <div class="paragraph"><p>Remember:</p></div>
 <div class="ulist"><ul><li><p>XRD defines an API</p></li><li><p>Compositions define how to implement them &#8658; XR</p></li></ul></div>
 <div class="paragraph"><p>But:</p></div>
 <div class="ulist"><ul><li><p>We can have more than one implementation</p></li></ul></div></div></section>
 <section id="_how_to_define_the_right_composition"><h2>How to define the right Composition?</h2><div class="slide-content"><div class="paragraph"><p>By naming them:</p></div>
-<hr>
-<div class="paragraph"><p>compositionRef:
-  name: haa
----</p></div>
+<div class="listingblock"><div class="content"><pre>compositionRef:
+  name: haa</pre></div></div>
 <div class="paragraph"><p>By using labels:</p></div>
 <div class="listingblock"><div class="content"><pre>compositionSelector:
   matchLabels:
@@ -663,7 +660,8 @@ kubectl apply -f select-composition2.yaml</pre></div></div>
 kubectl delete -f select-composition.yaml
 kubectl delete -f select-composition2.yaml
 kubectl delete -f select-xrd.yaml</pre></div></div></div></section>
-<section id="_monitoring"><h2>Monitoring</h2><div class="slide-content"><div class="ulist"><ul><li><p>Visibility is very important in every operations</p></li><li><p>This is where Crossplane still lacks</p></li></ul></div></div></section>
+<section id="_monitoring"><h2>Monitoring</h2><div class="slide-content"><div class="paragraph"><p>Directory: ./monitoring</p></div>
+<div class="ulist"><ul><li><p>Visibility is very important in every operations</p></li><li><p>This is where Crossplane still lacks</p></li></ul></div></div></section>
 <section id="_events"><h2>Events</h2><div class="slide-content"><div class="ulist"><ul><li><p>Most important Informations</p></li><li><p>Vanish after on hour</p></li><li><p>Some provider store them in there CRDs</p></li><li><p>Your admins should log the events away</p></li><li><p>I.e. with <a href="https://github.com/vmware-archive/eventrouter" class="bare">https://github.com/vmware-archive/eventrouter</a></p></li><li><p>There are also some log from the (Crossplane/Provider)Pods themself</p></li><li><p>* Not so much most of the time</p></li></ul></div></div></section>
 <section id="_but_metrics"><h2>But Metrics</h2><div class="slide-content"><div class="ulist"><ul><li><p>We are focusing on metrics</p></li><li><p>So we are using Prometheus</p></li><li><p>Getting started with metrics provided by Crossplane</p></li><li><p>Integrate Objects/CRDs provided by providers into the monitoring</p></li></ul></div></div></section>
 <section id="_learning_goals_3"><h2>Learning Goals</h2><div class="slide-content"><div class="ulist"><ul><li><p>Use metrics to monitor Crossplane</p></li><li><p>Feeling the urge to log events</p></li><li><p>Complaining about the trainers not getting into</p></li><li><p>* Events&#8594;Logs&#8594;Loki&#8594;Grafana[dashboard,alerts]</p></li></ul></div></div></section>
@@ -679,29 +677,35 @@ helm upgrade --install \
   prometheus prometheus-community/prometheus</pre></div></div></div></section>
 <section id="_accessing_prometheus"><h2>Accessing Prometheus</h2><div class="slide-content"><div class="ulist"><ul><li><p>We just use kubectl tunneling to Prometheus</p></li><li><p>In a terminal:</p></li></ul></div>
 <div class="listingblock"><div class="content"><pre>kubectl port-forward -n prometheus svc/prometheus-server 9090:80</pre></div></div>
-<div class="paragraph"><p>Then simply access Prometheus using <a href="http://localhost:9090" class="bare">http://localhost:9090</a></p></div>
-<div class="paragraph"><p>Then you can access "standard" controller-runtime metrics (as seen with kubebuilder)</p></div>
-<div class="paragraph"><p>Check [this](<a href="https://book.kubebuilder.io/plugins/grafana-v1-alpha.html?highlight=controller_runtime_reconcile_errors_total#grafana-dashboard" class="bare">https://book.kubebuilder.io/plugins/grafana-v1-alpha.html?highlight=controller_runtime_reconcile_errors_total#grafana-dashboard</a>) for some chart ideas.</p></div>
-<div class="paragraph"><p>Starter:</p></div>
-<div class="listingblock"><div class="content"><pre>controller_runtime_reconcile_errors_total</pre></div></div></div></section>
+<div class="ulist"><ul><li><p>Then simply access Prometheus using <a href="http://localhost:9090" class="bare">http://localhost:9090</a></p></li><li><p>Then you can access "standard" controller-runtime metrics (as seen with kubebuilder)</p></li><li><p>Check [this](<a href="https://book.kubebuilder.io/plugins/grafana-v1-alpha.html?highlight=controller_runtime_reconcile_errors_total#grafana-dashboard" class="bare">https://book.kubebuilder.io/plugins/grafana-v1-alpha.html?highlight=controller_runtime_reconcile_errors_total#grafana-dashboard</a>) for some chart ideas.</p></li></ul></div></div></section>
+<section id="_starter"><h2>Starter:</h2><div class="slide-content"><div class="listingblock"><div class="content"><pre>controller_runtime_reconcile_errors_total</pre></div></div>
+<div class="paragraph"><p>Whoot???</p></div></div></section>
 <section id="_monitoring_managed_resources"><h2>Monitoring managed resources</h2><div class="slide-content"><div class="ulist"><ul><li><p>To be honest metrics monitoring sucks</p></li><li><p>Lets have a look how to extend kube-state-metrics</p></li><li><p>Still pain in ..</p></li></ul></div></div></section>
 <section id="_learning_goals_4"><h2>Learning Goals</h2><div class="slide-content"><div class="ulist"><ul><li><p>Repeat RBAC know how</p></li><li><p>How to extend kube-state-metrics</p></li></ul></div></div></section>
-<section id="_if_time"><h2>if (time)</h2><div class="slide-content"><div class="ulist"><ul><li><p>Show how to write CustomResourceStateMetrics</p></li><li><p>Even we are patching them as inline (later)</p></li></ul></div></div></section>
 <section id="_check_objects_kubernetes_crossplane_iov1alpha1"><h2>Check objects.kubernetes.crossplane.io/v1alpha1</h2><div class="slide-content"><div class="paragraph"><p>kubes-state-metrics (the ServiceAccount) need more privileges:</p></div>
 <div class="listingblock"><div class="content"><pre>kubectl apply -f kube-state-rbac-add.yaml</pre></div></div></div></section>
 <section id="_configure_kube_state_metrics"><h2>Configure kube-state-metrics</h2><div class="slide-content"><div class="listingblock"><div class="content"><pre>kubectl -n prometheus patch deploy prometheus-kube-state-metrics --patch-file  kubestate-patch.yaml</pre></div></div>
 <div class="paragraph"><p>Check (could take some time) for the metric:</p></div>
 <div class="listingblock"><div class="content"><pre>kube_customresource_crossplane_kubernetes_object_ready</pre></div></div></div></section>
-<section id="_aws_managed_resources"><h2>AWS: Managed Resources</h2><div class="slide-content"><div class="paragraph"><p>Install the Provider (fyi: "family" exists)</p></div>
+<section id="_aws_managed_resources"><h2>AWS: Managed Resources</h2><div class="slide-content"><div class="paragraph"><p>Directory: ./provider-aws</p></div>
+<div class="paragraph"><p>Install the Provider (fyi: "family" exists)</p></div>
 <div class="listingblock"><div class="content"><pre>kubectl apply -f provider.yaml
 kubectl get provider.pkg.crossplane.io/provider-aws -w</pre></div></div></div></section>
 <section id="_get_credentials"><h2>Get Credentials</h2><div class="slide-content"><div class="listingblock"><div class="content"><pre>kubectl create secret generic aws-provider -n crossplane-system --from-file=creds=$HOME/.aws/credentials
 kubectl apply -f providerconfig.yaml</pre></div></div></div></section>
-<section id="_aws_cli"><h2>AWS-CLI</h2><div class="slide-content"><div class="ulist"><ul><li><p>We use the aws cli to get started</p></li></ul></div>
+<section id="_aws_cli"><h2>AWS-CLI</h2><div class="slide-content"><div class="ulist"><ul><li><p>We use the aws cli to get started</p></li><li><p>No dont do it ..</p></li></ul></div>
 <div class="listingblock"><div class="content"><pre>aws sts get-caller-identity
 aws rds create-db-instance --db-instance-identifier devopscon-rds-mysql --db-instance-class db.t3.micro --engine mysql --master-username devops --master-user-password 47114711 --allocated-storage 5
 ...
 aws rds delete-db-instance --db-instance-identifier devopscon-rds-mysql --skip-final-snapshot</pre></div></div></div></section>
+<section id="_project"><h2>Project</h2><div class="slide-content"><div class="ulist"><ul><li><p>As a Dev I would like to have a db-instance and a local Client</p></li></ul></div>
+<div class="paragraph"><p>Check the composition.yaml</p></div>
+<div class="listingblock"><div class="content"><pre>kubectl apply -f composition.yaml</pre></div></div>
+<div class="paragraph"><p>Deploy the "API"</p></div>
+<div class="listingblock"><div class="content"><pre>kubectl apply -f xrd.yaml</pre></div></div>
+<div class="paragraph"><p>Create you instance/Claim/XR</p></div>
+<div class="listingblock"><div class="content"><pre>kubectl apply -f claim.yaml</pre></div></div></div></section>
+<section id="_fin"><h2>fin</h2></section>
 <section id="_lobhudelei"><h2>Lobhudelei</h2><div class="slide-content"><div class="ulist"><ul><li><p>Reconciliation Loop all the time</p></li><li><p>All as Code</p></li><li><p>GitOps (aka everything is in Git)</p></li><li><p>Shifting Left (to the Devs)</p></li><li><p>Giving Complexity to the Ops aka Infra</p></li></ul></div></div></section>
 <section id="_editors"><h2>Editors?!!</h2></section></div></div><script src="HTML/reveal.js/dist/reveal.js"></script><script>Array.prototype.slice.call(document.querySelectorAll('.slides section')).forEach(function(slide) {
   if (slide.getAttribute('data-background-color')) return;
