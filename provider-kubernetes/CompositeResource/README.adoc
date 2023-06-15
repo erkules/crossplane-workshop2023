@@ -227,7 +227,7 @@ kubectl patch composite my-first-composite-resource-claim-lmmbd --type=merge -p 
 * Success!
 
 == Cleanup
-Let's get rid of all the Stuff we created
+Let's get rid of all the stuff we created
 
 [source,shell]
 ----
