@@ -1,5 +1,7 @@
 == RBAC
 
+Directory: ./rbac
+
 * With Crossplane reduce the complexity of rollouts
 * Let's limit the scope (privileges) of the consumers 
 * So they use (only) the *opinionated platform APIs*
@@ -35,7 +37,7 @@ xmyfirstcompositeresources.acme.example.org   2023-06-13T23:12:23Z
 * Create a Claim impersonating the user devopscon
 
 
-== Create namespace `rbac-crossplane` playground
+== Create namespace
 
 ----
 kubectl create ns rbac-crossplane
@@ -70,9 +72,11 @@ kubectl                   --as devopscon get MyFirstCompositeResource
 
 Expected:
 
-~~~~
+----
 Error from server (Forbidden): myfirstcompositeresources.acme.example.org is forbidden: User "devopscon" cannot list resource "myfirstcompositeresources" in API group "acme.example.org" in the namespace "default"
-~~~~
+----
+
+== Ah wrong namespace
 
 We request the resource in the correct namespace:
 

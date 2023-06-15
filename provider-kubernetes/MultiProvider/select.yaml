@@ -1,9 +1,7 @@
-# So clean 
 kind:        select
 apiVersion:  acme.example.org/v1alpha1
 metadata:
   name:      ja
-    #namespace: hallo
 spec:
   compositionSelector:
     matchLabels:

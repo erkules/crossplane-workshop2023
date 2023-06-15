@@ -1,0 +1,65 @@
+== Multiprovider 
+
+Dir: `./provider-kubernetes/MultiProvider`
+
+Remember:
+
+* XRD defines an API
+* Compositions define how to implement them => XR
+
+But:
+
+* We can have more than one implementation
+
+== How to define the right Composition?
+
+By naming them:
+
+----
+compositionRef:
+  name: haa
+----
+
+By using labels:
+
+----
+compositionSelector:
+  matchLabels:
+    nimm: twoobjetcts
+----
+
+== Deploying the CompositeResourceDefinition
+
+----
+kubectl apply -f select-xrd.yaml
+----
+
+== Deploying 2 Compositions
+
+----
+kubectl apply -f select-composition.yaml
+kubectl apply -f select-composition2.yaml
+----
+
+Check the difference
+
+== Claiming
+
+----
+kubectl apply -f select.yaml
+----
+
+* Check for the compositionSelector
+
+== CleanIT
+
+----
+kubectl delete -f select.yaml
+kubectl delete -f select-composition.yaml
+kubectl delete -f select-composition2.yaml
+kubectl delete -f select-xrd.yaml
+----
+
+
+
+

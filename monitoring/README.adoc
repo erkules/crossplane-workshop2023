@@ -1,5 +1,7 @@
 == Monitoring
 
+Directory: ./monitoring
+
 * Visibility is very important in every operations
 * This is where Crossplane still lacks
 
@@ -53,17 +55,19 @@ helm upgrade --install \
 kubectl port-forward -n prometheus svc/prometheus-server 9090:80
 ----
 
-Then simply access Prometheus using http://localhost:9090
+* Then simply access Prometheus using http://localhost:9090
 
-Then you can access "standard" controller-runtime metrics (as seen with kubebuilder)
+* Then you can access "standard" controller-runtime metrics (as seen with kubebuilder)
 
-Check [this](https://book.kubebuilder.io/plugins/grafana-v1-alpha.html?highlight=controller_runtime_reconcile_errors_total#grafana-dashboard) for some chart ideas.
+* Check [this](https://book.kubebuilder.io/plugins/grafana-v1-alpha.html?highlight=controller_runtime_reconcile_errors_total#grafana-dashboard) for some chart ideas.
 
-Starter:
+== Starter:
 
 ----
 controller_runtime_reconcile_errors_total
 ----
+
+Whoot???
 
 == Monitoring managed resources
 
@@ -76,10 +80,6 @@ controller_runtime_reconcile_errors_total
 * Repeat RBAC know how
 * How to extend kube-state-metrics
 
-== if (time)
-
-* Show how to write CustomResourceStateMetrics
-* Even we are patching them as inline (later)
 
 == Check objects.kubernetes.crossplane.io/v1alpha1
 

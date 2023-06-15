@@ -2,6 +2,7 @@
 Compositions and CompositeResources allow us to mix and match multiple external resources.
 
 Learning goals:
+
 * The Magic Triangle between `CompositeResourceDefinition`, `Composition` and `Claim`
 ** Understanding this is half the game!
 * Why Events are important
@@ -54,7 +55,7 @@ Uncomment the Lines after `claimNames` and apply
 kubectl apply -f CompositeResourceDefinition.yaml
 ----
 
-Expected
+
 * A second CRD was created
 * The XRD is now offered
 
@@ -140,7 +141,6 @@ Let's create another Claim and see what happens
 kubectl apply -f Claim-2.yaml
 ----
 
-Expected:
 * A second Claim, Synced and Ready
 * New MRs, Synced and Ready
 * But ... no second deployment?

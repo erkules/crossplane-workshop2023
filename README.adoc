@@ -265,8 +265,10 @@ include::provider-kubernetes/ManagedResources/README.adoc[]
 include::provider-kubernetes/CompositeResource/README.adoc[]
 
 include::rbac/README.adoc[]
-include::provider-kubernetes/MultiProvider//README.adoc[]
+include::provider-kubernetes/MultiProvider/README.adoc[]
 include::monitoring/README.adoc[]
+include::provider-aws/README.adoc[]
+// digitalocean
 
 
 
