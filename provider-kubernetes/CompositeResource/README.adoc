@@ -121,7 +121,7 @@ Kill the old watches and start new watches
 
 [source,shell]
 ----
-watch -n 1 kubectl get deployments,pods,services,claims,managed
+watch -n 1 kubectl get deployments,pods,services,claim,managed
 ----
 
 Four Replicas is way too much! Let's make it two

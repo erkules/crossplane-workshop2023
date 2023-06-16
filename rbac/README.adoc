@@ -45,7 +45,7 @@ kubectl create ns rbac-crossplane
 
 == ClusterRole
 
- Create a Clusterrole for MyFirstCompositeResource.acme.example.org/v1
+ Create a Clusterrole for MyFirstCompositeResource.acme.example.org/v1 (In rbac directory)
 
 ----
 kubectl apply -f consumer-cluster-role.yaml

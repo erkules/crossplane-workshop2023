@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="generator" content="Asciidoctor 2.0.16"/>
-<title>RBAC</title>
+<title>Compositions and Composite Resources</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700"/>
 <style>
 /*! Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -442,236 +442,493 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 <div id="content">
 <div class="sect1">
-<h2 id="_rbac">RBAC</h2>
+<h2 id="_compositions_and_composite_resources">Compositions and Composite Resources</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Directory: ./rbac</p>
+<p>Compositions and CompositeResources allow us to mix and match multiple external resources.</p>
+</div>
+<div class="paragraph">
+<p>Learning goals:</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p>With Crossplane reduce the complexity of rollouts</p>
+<p>The Magic Triangle between <code>CompositeResourceDefinition</code>, <code>Composition</code> and <code>Claim</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Understanding this is half the game!</p>
+</li>
+</ul>
+</div>
 </li>
 <li>
-<p>Let&#8217;s limit the scope (privileges) of the consumers</p>
+<p>Why Events are important</p>
 </li>
 <li>
-<p>So they use (only) the <strong>opinionated platform APIs</strong></p>
+<p>How to configure <code>Compositions</code> from <code>Claims</code></p>
 </li>
 <li>
-<p>using RBAC</p>
+<p>How <code>Composites</code> find their <code>Composition</code> (a bit)</p>
+</li>
+<li>
+<p>How to organize Patches</p>
 </li>
 </ul>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_benefit">Benefit</h2>
+<h2 id="_preparation">Preparation</h2>
 <div class="sectionbody">
+<div class="paragraph">
+<p>Move to the lessons directory</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-shell" data-lang="shell">cd provider-kubernetes/CompositeResource</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Start some watches</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-shell" data-lang="shell">watch -n 1 kubectl get crds,xrds</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_compositeresourcedefinition_xrd">CompositeResourceDefinition (XRD)</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Let&#8217;s create our first XRD</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-shell" data-lang="shell">kubectl apply -f CompositeResourceDefinition.yaml</code></pre>
+</div>
+</div>
 <div class="ulist">
 <ul>
 <li>
-<p>Consumers only create/delete/modify/get the provided platform APIs</p>
+<p>A CRD was created</p>
+</li>
+<li>
+<p>The XRD is Established</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s peek inside</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-shell" data-lang="shell">kubectl describe crd xmyfirstcompositeresources.acme.example.org | less</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Crossplane adds a lot of stuff</p>
+</li>
+<li>
+<p>Some of it we&#8217;ll discuss later</p>
 </li>
 </ul>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_learning_goals">Learning Goals</h2>
+<h2 id="_claims_offer_an_xr">Claims: Offer an XR</h2>
 <div class="sectionbody">
+<div class="paragraph">
+<p>To offer a CompositeResource we need Crossplane to generate a Claim</p>
+</div>
+<div class="paragraph">
+<p>Uncomment the Lines after <code>claimNames</code> and apply</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-shell" data-lang="shell">kubectl apply -f CompositeResourceDefinition.yaml</code></pre>
+</div>
+</div>
 <div class="ulist">
 <ul>
 <li>
-<p>Secure operations</p>
+<p>A second CRD was created</p>
 </li>
 <li>
-<p>Simplify operations</p>
-</li>
-<li>
-<p>How to use RBAC</p>
+<p>The XRD is now offered</p>
 </li>
 </ul>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_walkthrough">Walkthrough</h2>
+<h2 id="_claims">Claims</h2>
 <div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p>We assume we have still the Composite Resource Definition from 02</p>
-</li>
-<li>
-<p>On the other hand they should be gone</p>
-</li>
-<li>
-<p>So deploy them again</p>
-</li>
-</ul>
+<div class="paragraph">
+<p>Let&#8217;s create a Claim and see what happens</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>$ kubectl get crd xmyfirstcompositeresources.acme.example.org
-NAME                                          CREATED AT
-xmyfirstcompositeresources.acme.example.org   2023-06-13T23:12:23Z</pre>
+<pre class="highlight"><code class="language-shell" data-lang="shell">kubectl apply -f Claim.yaml</code></pre>
 </div>
 </div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_todo">TODO</h2>
-<div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
-<p>Create namespace <code>rbac-crossplane</code> playground</p>
+<p>The Claim is not Ready</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s find out why!</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-shell" data-lang="shell">kubectl describe claim first-example-claim | less</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>If something goes wrong, an Event is emitted</p>
 </li>
 <li>
-<p>Create a Clusterrole for MyFirstCompositeResource.acme.example.org/v1</p>
-</li>
-<li>
-<p>Create a Rolebinding to the user devopscon</p>
-</li>
-<li>
-<p>Create a Claim impersonating the user devopscon</p>
+<p>It&#8217;s waiting for the <code>CompositeResource</code> to become ready</p>
 </li>
 </ul>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_create_namespace">Create namespace</h2>
+<h2 id="_claims_2">Claims</h2>
 <div class="sectionbody">
-<div class="listingblock">
-<div class="content">
-<pre>kubectl create ns rbac-crossplane</pre>
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_clusterrole">ClusterRole</h2>
-<div class="sectionbody">
-<div class="literalblock">
-<div class="content">
-<pre>Create a Clusterrole for MyFirstCompositeResource.acme.example.org/v1 (In rbac directory)</pre>
-</div>
+<div class="paragraph">
+<p>Then let&#8217;s have a look at the CompositeResource</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>kubectl apply -f consumer-cluster-role.yaml</pre>
+<pre class="highlight"><code class="language-shell" data-lang="shell">kubectl describe composite | more</code></pre>
 </div>
 </div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_rolebinding">Rolebinding</h2>
-<div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
-<p>Create a Rolebinding to the user devopscon</p>
+<p>No compatible Composition found</p>
 </li>
 </ul>
 </div>
-<div class="listingblock">
-<div class="content">
-<pre>kubectl apply -f rolebinding.yaml</pre>
-</div>
-</div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_impersonating">Impersonating</h2>
+<h2 id="_compositions">Compositions</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>With impersonating we don&#8217;t need to "create" the user</p>
-</div>
-<div class="paragraph">
-<p>We request the resource in the default (wrong) namespace:</p>
+<p>So, let&#8217;s create a Composition! A simple one, containing a Deployment and a Service</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>kubectl                   --as devopscon get MyFirstCompositeResource</pre>
+<pre class="highlight"><code class="language-shell" data-lang="shell">kubectl apply -f Composition.yaml
+kubectl get deployments,services
+kubectl get crossplane</code></pre>
 </div>
 </div>
-<div class="paragraph">
-<p>Expected:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>Error from server (Forbidden): myfirstcompositeresources.acme.example.org is forbidden: User "devopscon" cannot list resource "myfirstcompositeresources" in API group "acme.example.org" in the namespace "default"</pre>
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_ah_wrong_namespace">Ah wrong namespace</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>We request the resource in the correct namespace:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>kubectl -n rbac-crossplane --as devopscon get MyFirstCompositeResource</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Expected:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>No resources found in rbac-crossplane namespace.</pre>
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_create_a_claim">Create a Claim</h2>
-<div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
-<p>Create a Claim impersonating the user devopscon</p>
+<p>The Claim becomes ready!</p>
+</li>
+<li>
+<p>There is a Service and a Deployment! Success!</p>
+</li>
+<li>
+<p>There are new Objects!</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>ProviderConfigUsages</code> prevent a <code>ProviderConfig</code> from being deleted while in use</p>
+</li>
+<li>
+<p><code>objects.kubernetes.crossplane.io/v1alpha1</code> are the ManagedResources</p>
 </li>
 </ul>
 </div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_compositions_2">Compositions</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Let&#8217;s filter all results for the Objects belonging to our Claim</p>
+</div>
 <div class="listingblock">
 <div class="content">
-<pre>kubectl --as devopscon -n rbac-crossplane apply -f ../CompositeResource/Claim.yaml
-kubectl --as devopscon -n rbac-crossplane get myfirstcompositeresource</pre>
+<pre class="highlight"><code class="language-shell" data-lang="shell">kubectl get crossplane,composite -l 'crossplane.io/claim-name=first-example-claim'</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>ProviderConfigUsages</code> are not labeled with the <code>claim-name</code></p>
+</li>
+<li>
+<p>Does anybody know why we have to specify the <code>composite</code>? It is in the Category <code>crossplane</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_using_claims_to_configure_resources">Using Claims to Configure Resources</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Kill the old watches and start new watches</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-shell" data-lang="shell">watch -n 1 kubectl get deployments,pods,services,claim,managed</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Four Replicas is way too much! Let&#8217;s make it two</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-shell" data-lang="shell">kubectl patch claim first-example-claim --type merge -p '{"spec":{"replicas": 2}}'</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Two Pods vanish. Success!</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_lets_make_it_double">Let&#8217;s Make It Double</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Let&#8217;s create another Claim and see what happens</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-shell" data-lang="shell">kubectl apply -f Claim-2.yaml</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>A second Claim, Synced and Ready</p>
+</li>
+<li>
+<p>New MRs, Synced and Ready</p>
+</li>
+<li>
+<p>But &#8230;&#8203; no second deployment?</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_fun_with_claims">Fun with Claims</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Let&#8217;s see what happens when we change one of the claims:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-shell" data-lang="shell">kubectl patch claim first-example-claim --type merge -p '{"spec":{"replicas": 4}}'</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Both "truths" are applied ad nauseam</p>
+</li>
+<li>
+<p>I&#8217;ve seen this on AWS Resource</p>
+<div class="ulist">
+<ul>
+<li>
+<p>The first Resource defines Tags (for a SecurityGroup)</p>
+</li>
+<li>
+<p>A separate Tag resource adds a Tag</p>
+</li>
+<li>
+<p>The SecurityGroup Controller removes the Tag</p>
+</li>
+<li>
+<p>The Claim never became Ready</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_using_claim_name_and_claim_namespace">Using claim-name and claim-namespace</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Let&#8217;s fix this by using different names</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-shell" data-lang="shell">kubectl apply -f CompositionWithPatching.yaml</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The new names are applied</p>
+</li>
+<li>
+<p>The old resources stay behind?</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s clean up the leftovers</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-shell" data-lang="shell">kubectl delete deployment my-deployment
+kubectl delete service my-service</code></pre>
 </div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_allow_user_to_view_other_resources">Allow User to view other resources</h2>
+<h2 id="_rolling_out_changes">Rolling out Changes</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Let&#8217;s have a terrible output</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>kubectl --as devopscon -n rbac-crossplane get all</pre>
-</div>
+<p>We can change all <code>XRs</code> by changing the <code>Composition</code>.</p>
 </div>
 <div class="paragraph">
-<p>There is no reason not to allow a User to have view-privileges on the other resources in the namespace</p>
+<p>Let&#8217;s change the service Port to 8081</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>kubectl -n rbac-crossplane create rolebinding guggeda --clusterrole=view --user=devopscon
-kubectl -n rbac-crossplane --as devopscon get all</pre>
+<pre class="highlight"><code class="language-shell" data-lang="shell">kubectl edit composition xmyfirstcomposition.acme.example.org</code></pre>
 </div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Both services now use 8081</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_opting_out_of_updates">Opting out of Updates</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>We can opt out of updates by changing the <code>compositionUpdatePolicy</code> to <code>Manual</code> and the Service Port back to 8080</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-shell" data-lang="shell">kubectl patch claim first-example-claim --type=merge -p '{"spec":{"compositionUpdatePolicy": "Manual"}}'
+kubectl edit composition xmyfirstcomposition.acme.example.org</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Only the second <code>Service</code> changed</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_manually_update_composition_via_claim">Manually Update Composition via Claim</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>We can update the <code>compositionRef</code> manually</p>
+</div>
+<div class="paragraph">
+<p>First we list the <code>CompositionRevisions</code>, then we use the name of the newest <code>CompositionRevision</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-shell" data-lang="shell">kubectl get compositionrevisions
+kubectl patch claim first-example-claim --type=merge -p '{"spec":{"compositionRevisionRef":{"name":"xmyfirstcomposition.acme.example.org-5b0265f"}}}'
+kubectl get claim,composite -o=custom-columns='NAME:.metadata.name,REF:.spec.compositionRevisionRef.name'</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The first <code>Service</code> still uses port 8081</p>
+</li>
+<li>
+<p>There seems to be a bug - the <code>compositionRevisionRef</code> is not transferred from the <code>Claim</code> to the <code>XR</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_manually_update_composition_via_composite">Manually Update Composition via Composite</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>So, let&#8217;s see if we can fix it by updating the <code>XR</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-shell" data-lang="shell">kubectl patch composite my-first-composite-resource-claim-lmmbd --type=merge -p '{"spec":{"compositionRevisionRef":{"name":"xmyfirstcomposition.acme.example.org-5b0265f"}}}'</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Success!</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_cleanup">Cleanup</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Let&#8217;s get rid of all the stuff we created</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-shell" data-lang="shell">kubectl delete xrd xmyfirstcompositeresources.acme.example.org</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>That was easy :)</p>
+</li>
+<li>
+<p>And scary 😱</p>
+</li>
+</ul>
 </div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2023-06-16 09:36:15 UTC
+Last updated 2023-06-16 09:37:58 UTC
 </div>
 </div>
 </body>
